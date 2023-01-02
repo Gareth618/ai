@@ -5,7 +5,7 @@
 - agentul trebuie să exploreze imaginea formând un path care merge cât de cât pe drumul indus de gradient și care la final atinge targetul
 - la pasul curent, agentul poate vedea doar pe o anumită rază, stabilită de noi
 
-# task-uri
+# taskuri
 
 - environment
   - generare de imagini random
