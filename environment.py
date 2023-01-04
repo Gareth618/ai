@@ -133,7 +133,15 @@ class Environment:
         # `action = (delta_x, delta_y)`
         # updates `self.agent_path`
         # returns `(observation = _snapshot(), reward, finished)`
-        ...
+        new_position = (self.agent_position[0] + action[0], self.agent_position[1] + action[1])
+        if not 0 <= new_position[0] < self.image_size or not 0 <= new_position[1] < self.image_size:
+            return self._snapshot(), -1000000, False
+
+        self.agent_path.append(new_position)
+        if new_position == self.target_position:
+            return self._snapshot(), 100, True
+        else:
+            return self._snapshot(), 1, False
 
     def test(self):
         print(self._snapshot())
