@@ -1,3 +1,4 @@
+import math
 import random
 from PIL import Image
 import matplotlib as mpl
@@ -7,16 +8,17 @@ import matplotlib.cm as cm
 
 class Environment:
     zoom_factor = 6
+    path_color = (0, 153, 153)
 
     def __init__(self, image_size, window_size):
         self.image_size = image_size
         self.window_size = window_size
-        self.reset(False)
+        self.reset(True)
 
     def reset(self, use_gradient):
-        self.image = self._random_gradient_image() if use_gradient else self._random_image()
-
         self.target_position = (random.randint(0, self.image_size - 1), random.randint(0, self.image_size - 1))
+
+        self.image = self._random_gradient_image() if use_gradient else self._random_image()
         self.image[self.target_position[0]][self.target_position[1]] = 9
 
         self.agent_position = (random.randint(0, self.image_size - 1), random.randint(0, self.image_size - 1))
@@ -34,11 +36,32 @@ class Environment:
         return image
 
     def _random_gradient_image(self):
-        ...
-        # target -> 9
-        # 75549
-        # 76544
-        # 76555
+        factors = [1.10963, 1.2712, 1.36552, 1.43312, 1.48623, 1.53015, 1.56771, 1.60059, 1.62987, 1.65631]
+        factor = factors[min(self.image_size // 10 - 1, 9)]
+        temp = [1]
+        for i in range(1, 9):
+            temp.append(temp[i - 1] * factor)
+        borders = [1]
+        for i in range(1, 9):
+            borders.append(borders[i - 1] + temp[i - 1])
+        borders = borders[1:]
+        borders.append(self.image_size * 2)
+        image = []
+        for i in range(0, self.image_size):
+            t = []
+            for j in range(0, self.image_size):
+                d = math.sqrt((self.target_position[0] - i) ** 2 + (self.target_position[1] - j) ** 2)
+                k = 0
+                while d > borders[k]:
+                    k = k + 1
+                color = 8 - k
+                t.append(color)
+            image.append(t)
+        for i in range(0, self.image_size):
+            for j in range(0, self.image_size):
+                x = random.choices([0, -1, 1], weights=[13, 2, 1], k=1)
+                image[i][j] = max(0, min(8, image[i][j] + x[0]))
+        return image
 
     def _snapshot(self):
         # returns a matrix of the current observable image
@@ -63,8 +86,8 @@ class Environment:
         norm = mpl.colors.Normalize(vmin=0, vmax=9)
         # https://matplotlib.org/stable/tutorials/colors/colormaps.html
         # cmap = cm.nipy_spectral
-        cmap = cm.hot
-        # cmap = cm.CMRmap
+        # cmap = cm.hot
+        cmap = cm.CMRmap
         m = cm.ScalarMappable(norm=norm, cmap=cmap)
 
         image_size = self.image_size * self.zoom_factor
@@ -77,7 +100,7 @@ class Environment:
                     for u in range(0, self.zoom_factor):
                         pixels[j * self.zoom_factor + u, i * self.zoom_factor + k] = color
 
-        #self.agent_path = [(0, 1), (0, 2), (1, 2), (2, 2), (3, 2), (3, 1), (4, 1), (4, 2), (4, 3), (4, 4), (3, 4)]
+        # self.agent_path = [(0, 1), (0, 2), (1, 2), (2, 2), (3, 2), (3, 1), (4, 1), (4, 2), (4, 3), (4, 4), (3, 4)]
         for i in range(1, len(self.agent_path)):
             first = self.agent_path[i - 1]
             second = self.agent_path[i]
@@ -91,8 +114,8 @@ class Environment:
                 for j in range(0, self.zoom_factor + 2):
                     x = first[0] * self.zoom_factor + self.zoom_factor / 2
                     y = st * self.zoom_factor + self.zoom_factor / 2 + j - 1
-                    pixels[y, x] = (0, 0, 255)
-                    pixels[y, x - 1] = (0, 0, 255)
+                    pixels[y, x] = self.path_color
+                    pixels[y, x - 1] = self.path_color
             else:
                 if first[0] < second[0]:
                     up = first[0]
@@ -101,8 +124,8 @@ class Environment:
                 for j in range(0, self.zoom_factor + 2):
                     x = up * self.zoom_factor + self.zoom_factor / 2 + j - 1
                     y = first[1] * self.zoom_factor + self.zoom_factor / 2
-                    pixels[y, x] = (0, 0, 255)
-                    pixels[y - 1, x] = (0, 0, 255)
+                    pixels[y, x] = self.path_color
+                    pixels[y - 1, x] = self.path_color
         mplpp.imshow(img)
         mplpp.show()
 
@@ -116,6 +139,6 @@ class Environment:
         print(self._snapshot())
 
 
-obj = Environment(10, 3)
+obj = Environment(20, 3)
 obj.render()
 # obj.test()
