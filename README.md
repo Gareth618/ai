@@ -10,7 +10,7 @@
 - environment
   - generare de imagini random
   - generare de imagini cu gradienți circulari
-  - afișare (de exemplu cu `pyplot`) a imaginii cu traseul ales (valorile între $0$ și $9$ trebuie mapate la culori reale, probabil alb-negru)
+  - afișare (de exemplu cu `pyplot`) a imaginii cu traseul ales (valorile între $0$ și $10$ trebuie mapate la culori reale, probabil alb-negru, unde $10$ reprezintă valoare pixelilor din afara matricei)
 - agent
   - funcție care efectuează pasul curent cu $\epsilon$-greedy
   - funcție care face experience replay
@@ -25,5 +25,5 @@
 
 - trebuie să alegem niște dimensiuni (sau una singură) standard pentru imagini, că de mărimea imaginii depinde structura rețelei neuronale
 - trebuie să vedem cum asignăm rewarduri fiecărui state, că scorul pentru drumul final se calculează ușor, dar pentru un singur pas cum facem??
-  - ok, deocamdată am ales reward $1$ pentru orice pas și scorul final calculat ca în paper pentru pasul final, care ne duce la target
-  - putem diminua rewardul $1$ pentru celulele pe care deja le-am vizitat
+  - ok, deocamdată am ales reward $-1$ pentru orice pas și scorul final calculat ca în paper pentru pasul final, care ne duce la target
+  - putem diminua rewardul $-1$ pentru celulele pe care deja le-am vizitat

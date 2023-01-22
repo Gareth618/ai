@@ -5,7 +5,6 @@ import matplotlib as mpl
 import matplotlib.pyplot as mplpp
 import matplotlib.cm as cm
 
-
 class Environment:
     zoom_factor = 6
     path_color = (0, 153, 153)
@@ -64,7 +63,10 @@ class Environment:
         return image
 
     def _snapshot(self):
-        # returns a matrix of the current observable image
+        """
+        returns a matrix of the current observable image
+        """
+
         border_value = 10
         window = []
         for i in range(0, self.window_size):
@@ -81,8 +83,11 @@ class Environment:
         return window
 
     def render(self):
-        # renders the entire image along with `self.agent_path` to
-        # the pixels are mapped from [0, 9] to [0, 255]
+        """ 
+        renders the entire image along with `self.agent_path` too\\
+        the pixels are mapped from `[0, 9]` to `[0, 255]`
+        """
+
         norm = mpl.colors.Normalize(vmin=0, vmax=9)
         # https://matplotlib.org/stable/tutorials/colors/colormaps.html
         # cmap = cm.nipy_spectral
@@ -126,13 +131,18 @@ class Environment:
                     y = first[1] * self.zoom_factor + self.zoom_factor / 2
                     pixels[y, x] = self.path_color
                     pixels[y - 1, x] = self.path_color
+        _, ax = mplpp.subplots()
         mplpp.imshow(img)
+        ax.xaxis.set_ticks_position('top')
         mplpp.show()
 
     def step(self, action):
-        # `action = (delta_x, delta_y)`
-        # updates `self.agent_path`
-        # returns `(observation = _snapshot(), reward, finished)`
+        """
+        `action = (delta_x, delta_y)`\\
+        updates `self.agent_path`\\
+        returns `(observation = _snapshot(), reward, finished)`
+        """
+
         new_position = (self.agent_position[0] + action[0], self.agent_position[1] + action[1])
         if not 0 <= new_position[0] < self.image_size or not 0 <= new_position[1] < self.image_size:
             return self._snapshot(), -1000000, False
@@ -141,12 +151,7 @@ class Environment:
         if new_position == self.target_position:
             return self._snapshot(), 100, True
         else:
-            return self._snapshot(), 1, False
+            return self._snapshot(), -1, False
 
     def test(self):
         print(self._snapshot())
-
-
-obj = Environment(20, 3)
-obj.render()
-# obj.test()
