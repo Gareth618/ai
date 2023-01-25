@@ -20,14 +20,14 @@ class Agent:
         self.model = self.create_model()
         self.target_model = self.create_model()
         # check if model file exists
-        if os.path.exists('model'):
-            self.load()
+        # if os.path.exists('model.index'):
+        self.load()
 
     def create_model(self):
         model = Sequential()
-        model.add(Conv2D(filters=4, kernel_size=3, activation='relu', input_shape=(7, 7, 1)))
+        model.add(Conv2D(filters=4, kernel_size=3, activation='sigmoid', input_shape=(7, 7, 1)))
         model.add(Flatten())
-        model.add(Dense(100, activation='relu'))
+        model.add(Dense(100, activation='sigmoid'))
         model.add(Dense(4))
         model.compile(loss='mean_squared_error', optimizer=Adam(learning_rate=self.alpha))
         model.summary()
@@ -71,7 +71,7 @@ class Agent:
             training_inputs += [state]
             training_outputs += [target]
 
-        self.model.fit(np.array(training_inputs), np.array(training_outputs), use_multiprocessing=True, verbose=0)
+        self.model.fit(np.array(training_inputs), np.array(training_outputs), epochs=10, use_multiprocessing=True, verbose=0)
         # self.target_model.fit(np.array(training_inputs), np.array(training_outputs), use_multiprocessing=True,
         # verbose=0)
 
@@ -84,7 +84,7 @@ class Agent:
 
     def load(self):
         self.model.load_weights('model')
-        self.target_model.load_weights('model')
+        # self.target_model.load_weights('model.index')
         print('***** Model loaded successfully from file *****')
 
     def save(self):

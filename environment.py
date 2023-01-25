@@ -172,7 +172,7 @@ class Environment:
         self.agent_path.append(new_position)
         self.agent_position = new_position
         if new_position == self.target_position:
-            return self.snapshot(), 100, True
+            return self.snapshot(), 10_000, True
         elif new_position in self.agent_path[:-1]:
             return self.snapshot(), -100, False
         else:
