@@ -6,7 +6,7 @@ from agent import Agent
 from environment import Environment
 
 env = Environment(20, 7)
-agent = Agent(70, 10, alpha=.01, gamma=.95, epsilon=1, epsilon_lower=.1, epsilon_decay=.98)
+agent = Agent(100, 20, alpha=.001, gamma=.95, epsilon=1, epsilon_lower=.1, epsilon_decay=.95)
 observation = env.snapshot()
 game_over = False
 episode_reward = 0
@@ -47,18 +47,18 @@ def main():
         episode_steps_list, episode_shortest_paths
 
     number_of_episodes = 500
-    max_steps = 400
+    max_steps = 80
 
     for episode in range(number_of_episodes):
         env.reset(True)
         episode_shortest_paths.append(env.shortest_path())
-        if episode in (199, 299, 399, 499):
+        if episode in (399, 499):
             input('Press enter to start viewing the training process on the next episode')
 
         while not game_over and episode_steps < max_steps:
             state = process_frame(observation)
             agent.step(state, take_action)
-            if episode in (199, 299, 399, 499):
+            if episode in (399, 499):
                 env.render(f'Stage: Training - Episode: {episode + 1}/{number_of_episodes} - Reward: {episode_reward} '
                            f'- Steps: {episode_steps} - Shortest path: {episode_shortest_paths[-1]} '
                            f'\nAgent position: {env.agent_position}'
