@@ -27,10 +27,9 @@ class Agent:
             self.model = self.create_model()
             self.target_model = self.create_model()
 
-
     def create_model(self):
         model = Sequential()
-        model.add(Conv2D(filters=4, kernel_size=3, activation='relu', input_shape=(5, 5, 1)))
+        model.add(Conv2D(filters=4, kernel_size=3, activation='relu', input_shape=(7, 7, 1)))
         model.add(Flatten())
         model.add(Dense(100, activation='relu'))
         model.add(Dense(4))
@@ -58,7 +57,8 @@ class Agent:
 
     def replay(self):
         memory = list(self.memory.queue)
-        if self.batch_size > len(memory): return
+        if self.batch_size > len(memory):
+            return
         batch = random.sample(memory, self.batch_size)
 
         training_inputs = []
@@ -69,23 +69,22 @@ class Agent:
             if game_over:
                 target[action_index] = reward
             else:
-                q_values = self.target_model.predict(np.array([next_state]), verbose=0)[0]
-                # q_values = self.model.predict(np.array([next_state]), verbose=0)[0]
+                # q_values = self.target_model.predict(np.array([next_state]), verbose=0)[0]
+                q_values = self.model.predict(np.array([next_state]), verbose=0)[0]
                 target[action_index] = reward + self.gamma * np.max(q_values)
             training_inputs += [state]
             training_outputs += [target]
 
         self.model.fit(np.array(training_inputs), np.array(training_outputs), use_multiprocessing=True, verbose=0)
-        # self.target_model.fit(np.array(training_inputs), np.array(training_outputs), use_multiprocessing=True, verbose=0)
+        # self.target_model.fit(np.array(training_inputs), np.array(training_outputs), use_multiprocessing=True,
+        # verbose=0)
 
         if self.epsilon > self.epsilon_lower:
             self.epsilon *= self.epsilon_decay
 
-
     def update_target(self):
         # self.model.set_weights(self.target_model.get_weights())
         self.target_model.set_weights(self.model.get_weights())
-
 
     def load(self):
         self.model.load_weights('model')
