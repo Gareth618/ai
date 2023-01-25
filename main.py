@@ -57,13 +57,13 @@ def main():
         while not game_over and episode_steps < max_steps:
             state = process_frame(observation)
             agent.step(state, take_action)
-            agent.replay()
             if episode in (49, 99, 149, 199):
                 env.render(f'Stage: Training - Episode: {episode + 1}/{number_of_episodes} - Reward: {episode_reward} '
                            f'- Steps: {episode_steps} - Shortest path: {episode_shortest_paths[-1]} '
                            f'\nAgent position: {env.agent_position}'
                            f'\nHyper-parameters: Alpha={agent.alpha:.3f}, Gamma={agent.gamma:.3f}, Epsilon={agent.epsilon:.3f} ')
 
+        agent.replay()
         if episode % 5 == 0:
             agent.update_target()
 
