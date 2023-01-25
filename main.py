@@ -1,20 +1,8 @@
-import time
-import numpy
+import numpy as np
 import matplotlib.pyplot as plt
+
 from agent import Agent
 from environment import Environment
-
-
-env = Environment(20, 5)
-agent = Agent(50, 10, alpha=.01, gamma=.95, epsilon=1, epsilon_lower=.1, epsilon_decay=.999)
-observation = env.snapshot()
-game_over = False
-episode_reward = 0
-episode_steps = 0
-episode_rewards = []
-episode_steps_list = []
-episode_shortest_paths = []
-
 
 def process_frame(frame):
     """
@@ -22,98 +10,91 @@ def process_frame(frame):
     """
     return [[val / 10 for val in row] for row in frame]
 
-
 def take_action(action):
     """
     passed to `agent.step`\\
     uses `environment.step`\\
     updates stats for the current episode
     """
-    global env, agent, observation, game_over, episode_reward, episode_steps
-
-    if not env.is_valid_action(action):
-        return None, -100, game_over
-
+    global env, episode_reward, episode_steps, game_over
     observation, reward, game_over = env.step(action)
     episode_reward += reward
     episode_steps += 1
     return observation, reward, game_over
 
-
-def main():
-    global env, agent, observation, game_over, episode_reward, episode_steps, episode_rewards, episode_steps_list, episode_shortest_paths
-    number_of_episodes = 200
-    max_steps = 400
-
-    for episode in range(number_of_episodes):
-        env.reset(True)
-        episode_shortest_paths.append(env.shortest_path_length())
-        if episode in (10, 99, 149, 199):
-            input('Press enter to start viewing the training process on the next episode')
-
-        while not game_over and episode_steps < max_steps:
-            state = process_frame(observation)
-            agent.step(state, take_action)
-            if episode in (10, 99, 149, 199):
-                env.render(f'Stage: Training - Episode: {episode + 1}/{number_of_episodes} - Reward: {episode_reward} '
-                           f'- Steps: {episode_steps} - Shortest path: {episode_shortest_paths[-1]} '
-                           f'\nAgent position: {env.agent_position}'
-                           f'\nHyper-parameters: Alpha={agent.alpha:.3f}, Gamma={agent.gamma:.3f}, Epsilon={agent.epsilon:.3f} ')
-
-        agent.replay()
-        # if episode % 5 == 0:
-        #     agent.update_target()
-
-        print(f'Stage: Training - Episode: {episode + 1}/{number_of_episodes} - Reward: {episode_reward} - Steps: {episode_steps} - Shortest path: {episode_shortest_paths[-1]}'
-              f'\nHyper-parameters: Alpha={agent.alpha:.3f}, Gamma={agent.gamma:.3f}, Epsilon={agent.epsilon:.3f} ')
-
-        episode_rewards.append(episode_reward)
-        episode_steps_list.append(episode_steps)
-        episode_reward = 0
-        episode_steps = 0
-        game_over = False
-
-    # save the target model
-    agent.save_model('target_model.h5')
-
-    # plot the rewards
+def plot_stats(number_of_episodes, rewards, steps_list, shortest_paths):
     plt.figure(figsize=(10, 10))
-    plt.plot([episode + 1 for episode in range(number_of_episodes)],
-             [numpy.mean([episode_rewards[i]
-                          for i in range(min(ep, number_of_episodes - 5), min(ep + 5, number_of_episodes))])
-              for ep in range(number_of_episodes)])
+    plt.plot(
+        range(1, number_of_episodes + 1),
+        [np.mean([rewards[i] for i in range(
+            min(episode, number_of_episodes - 5),
+            min(episode + 5, number_of_episodes)
+        )]) for episode in range(1, number_of_episodes + 1)]
+    )
     plt.gca().xaxis.set_ticks_position('top')
     plt.xlabel('Episode')
     plt.ylabel('Reward')
     plt.savefig('rewards.png')
 
-    # plot the steps
     plt.figure(figsize=(10, 10))
-    plt.plot([episode + 1 for episode in range(number_of_episodes)],
-             [numpy.mean([episode_shortest_paths[i]
-                            for i in range(min(ep, number_of_episodes - 5), min(ep + 5, number_of_episodes))])/
-              numpy.mean([episode_steps_list[i]
-                          for i in range(min(ep, number_of_episodes - 5), min(ep + 5, number_of_episodes))])
-              for ep in range(number_of_episodes)])
+    plt.plot(
+        range(1, number_of_episodes + 1),
+        [np.mean([shortest_paths[i] for i in range(
+            min(episode, number_of_episodes - 5),
+            min(episode + 5, number_of_episodes)
+        )]) / np.mean([steps_list[i] for i in range(
+            min(episode, number_of_episodes - 5),
+            min(episode + 5, number_of_episodes)
+        )]) for episode in range(1, number_of_episodes + 1)]
+    )
     plt.xlabel('Episode')
     plt.ylabel('Shortest path / Total steps')
     plt.savefig('steps.png')
 
-    # test the model on a new environment
-    input('Press enter to test the model on a new environment')
-    env.reset(True)
-    shortest_path = env.shortest_path_length()
-    episode_reward = 0
-    episode_steps = 0
-    while not game_over:
-        state = process_frame(env.snapshot())
-        agent.step(state, take_action)
-        env.render(f'Stage: Testing - Reward: {episode_reward} - Steps: {episode_steps} - Shortest path: {shortest_path}'
-                   f'\nAgent position: {env.agent_position}'
-                   f'\nHyper-parameters: Alpha={agent.alpha:.3f}, Gamma={agent.gamma:.3f}, Epsilon={agent.epsilon:.3f} ')
-        time.sleep(.1)
-        episode_steps += 1
-
-
 if __name__ == '__main__':
-    main()
+    env = Environment(20, 7)
+    agent = Agent(100, 20, alpha=.1, gamma=.95, epsilon=1, epsilon_lower=.1, epsilon_decay=.9)
+
+    episode_rewards = []
+    episode_steps_list = []
+    episode_shortest_paths = []
+
+    number_of_episodes = 100
+    max_steps = 100
+
+    for episode in range(1, number_of_episodes + 1):
+        game_over = False
+        episode_steps = 0
+        episode_reward = 0
+
+        env.reset(True)
+        episode_shortest_paths.append(env.shortest_path_length())
+
+        choice = 'n'
+        if episode % 10 == 0:
+            choice = input('>>> Do you want to view the training process on the next episode? [Y/N] ').lower()
+            if choice != 'y': choice = 'n'
+
+        observation = env.snapshot()
+        while not game_over and episode_steps < max_steps:
+            state = process_frame(observation)
+            agent.step(state, take_action)
+            if choice == 'y':
+                env.render(
+                    f'Stage: Training - Episode: {episode}/{number_of_episodes} - Reward: {episode_reward} '
+                    f'- Steps: {episode_steps} - Shortest path: {episode_shortest_paths[-1]}'
+                    f'\nAgent position: {env.agent_position} - Epsilon: {agent.epsilon:.3f}'
+                )
+        episode_rewards.append(episode_reward)
+        episode_steps_list.append(episode_steps)
+
+        agent.replay()
+        agent.save()
+
+        print(
+            f'Stage: Training - Episode: {episode}/{number_of_episodes} - Reward: {episode_reward} '
+            f'- Steps: {episode_steps} - Shortest path: {episode_shortest_paths[-1]}'
+            f'\nAgent position: {env.agent_position} - Epsilon: {agent.epsilon:.3f}'
+        )
+
+    plot_stats(number_of_episodes, episode_rewards, episode_steps_list, episode_shortest_paths)

@@ -1,2 +1,6 @@
 .DS_Store
+.idea
 __pycache__
+checkpoint
+model.data-00000-of-00001
+model.index

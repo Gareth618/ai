@@ -2,7 +2,7 @@ import math
 import random
 import matplotlib as mpl
 import matplotlib.cm as cm
-import matplotlib.pyplot as mplpp
+import matplotlib.pyplot as plt
 from PIL import Image
 
 class Environment:
@@ -13,10 +13,8 @@ class Environment:
         self.target_position = None
         self.image_size = image_size
         self.window_size = window_size
-        self.reset(True)
-        mplpp.ion()
-        self.figure, ax = mplpp.subplots()
-        ax.xaxis.set_ticks_position('top')
+        self.figure = None
+        plt.ion()
 
     def reset(self, use_gradient):
         self.target_position = (random.randrange(self.image_size), random.randrange(self.image_size))
@@ -130,15 +128,18 @@ class Environment:
                 y = self.agent_position[0] * zoom_factor + zoom_factor // 2 + j
                 pixels[x, y] = (255, 255, 255)
 
-        mplpp.imshow(img)
-        mplpp.title(title)
+        if self.figure is None:
+            self.figure, ax = plt.subplots()
+            ax.xaxis.set_ticks_position('top')
+        plt.imshow(img)
+        plt.title(title)
         self.figure.canvas.flush_events()
 
     def step(self, action):
         """
         `action = (delta_x, delta_y)`\\
         updates `self.agent_path`\\
-        returns `(observation = _snapshot(), reward, finished)`
+        returns `(observation = snapshot(), reward, finished)`
         """
 
         new_position = (self.agent_position[0] + action[0], self.agent_position[1] + action[1])
