@@ -1,7 +1,6 @@
 import time
-import matplotlib.pyplot as plt
 import numpy
-
+import matplotlib.pyplot as plt
 from agent import Agent
 from environment import Environment
 
@@ -32,14 +31,12 @@ def take_action(action):
     """
     global env, agent, observation, game_over, episode_reward, episode_steps
 
-    # check if action is valid
     if not env.is_valid_action(action):
         return None, -100, game_over
 
     observation, reward, game_over = env.step(action)
     episode_reward += reward
     episode_steps += 1
-
     return observation, reward, game_over
 
 
@@ -50,22 +47,22 @@ def main():
 
     for episode in range(number_of_episodes):
         env.reset(True)
-        episode_shortest_paths.append(env.shortest_path())
-        if episode in (49, 99, 149, 199):
+        episode_shortest_paths.append(env.shortest_path_length())
+        if episode in (10, 99, 149, 199):
             input('Press enter to start viewing the training process on the next episode')
 
         while not game_over and episode_steps < max_steps:
             state = process_frame(observation)
             agent.step(state, take_action)
-            if episode in (49, 99, 149, 199):
+            if episode in (10, 99, 149, 199):
                 env.render(f'Stage: Training - Episode: {episode + 1}/{number_of_episodes} - Reward: {episode_reward} '
                            f'- Steps: {episode_steps} - Shortest path: {episode_shortest_paths[-1]} '
                            f'\nAgent position: {env.agent_position}'
                            f'\nHyper-parameters: Alpha={agent.alpha:.3f}, Gamma={agent.gamma:.3f}, Epsilon={agent.epsilon:.3f} ')
 
         agent.replay()
-        if episode % 5 == 0:
-            agent.update_target()
+        # if episode % 5 == 0:
+        #     agent.update_target()
 
         print(f'Stage: Training - Episode: {episode + 1}/{number_of_episodes} - Reward: {episode_reward} - Steps: {episode_steps} - Shortest path: {episode_shortest_paths[-1]}'
               f'\nHyper-parameters: Alpha={agent.alpha:.3f}, Gamma={agent.gamma:.3f}, Epsilon={agent.epsilon:.3f} ')
@@ -105,7 +102,7 @@ def main():
     # test the model on a new environment
     input('Press enter to test the model on a new environment')
     env.reset(True)
-    shortest_path = env.shortest_path()
+    shortest_path = env.shortest_path_length()
     episode_reward = 0
     episode_steps = 0
     while not game_over:
