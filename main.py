@@ -6,7 +6,7 @@ from agent import Agent
 from environment import Environment
 
 env = Environment(20, 7)
-agent = Agent(70, 10, alpha=.01, gamma=.95, epsilon=1, epsilon_lower=.1, epsilon_decay=.98)
+agent = Agent(70, 10, alpha=.1, gamma=.95, epsilon=1, epsilon_lower=.01, epsilon_decay=.95)
 observation = env.snapshot()
 game_over = False
 episode_reward = 0
@@ -47,18 +47,18 @@ def main():
         episode_steps_list, episode_shortest_paths
 
     number_of_episodes = 500
-    max_steps = 400
+    max_steps = 80
 
     for episode in range(number_of_episodes):
         env.reset(True)
         episode_shortest_paths.append(env.shortest_path())
-        if episode in (199, 299, 399, 499):
-            input('Press enter to start viewing the training process on the next episode')
+        # if episode in (399, 499):
+        #     input('Press enter to start viewing the training process on the next episode')
 
         while not game_over and episode_steps < max_steps:
             state = process_frame(observation)
             agent.step(state, take_action)
-            if episode in (199, 299, 399, 499):
+            if episode in (399, 499):
                 env.render(f'Stage: Training - Episode: {episode + 1}/{number_of_episodes} - Reward: {episode_reward} '
                            f'- Steps: {episode_steps} - Shortest path: {episode_shortest_paths[-1]} '
                            f'\nAgent position: {env.agent_position}'
@@ -66,7 +66,8 @@ def main():
                            f'Epsilon={agent.epsilon:.3f} ')
 
         agent.replay()
-        # if episode % 5 == 0:
+        if episode % 50 == 0:
+            agent.save()
         #     agent.update_target()
 
         print(f'Stage: Training - Episode: {episode + 1}/{number_of_episodes} - Reward: {episode_reward} '
@@ -80,7 +81,7 @@ def main():
         game_over = False
 
     # save the target model
-    agent.save_model('target_model.h5')
+    agent.save()
 
     # plot the rewards
     plt.figure(figsize=(10, 10))
@@ -107,6 +108,8 @@ def main():
 
     # test the model on a new environment
     input('Press enter to test the model on a new environment')
+    plt.close('all')
+    plt.figure(figsize=(10, 10))
     env.reset(True)
     shortest_path = env.shortest_path()
     episode_reward = 0

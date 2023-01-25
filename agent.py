@@ -5,7 +5,6 @@ from queue import Queue
 from keras.models import Sequential
 from keras.layers import Conv2D, Flatten, Dense
 from keras.optimizers import Adam
-from tensorflow.python.keras.saving.save import load_model
 
 
 class Agent:
@@ -18,14 +17,11 @@ class Agent:
         self.memory = Queue(memory_size)
         self.batch_size = batch_size
         self.action_space = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-        # check if target_model.h5 file exists
-        if os.path.exists('target_model.h5'):
-            self.model = load_model('target_model.h5')
-            self.target_model = load_model('target_model.h5')
-            print('***** Model loaded successfully from file *****')
-        else:
-            self.model = self.create_model()
-            self.target_model = self.create_model()
+        self.model = self.create_model()
+        self.target_model = self.create_model()
+        # check if model file exists
+        if os.path.exists('model'):
+            self.load()
 
     def create_model(self):
         model = Sequential()
@@ -88,12 +84,16 @@ class Agent:
 
     def load(self):
         self.model.load_weights('model')
+        self.target_model.load_weights('model')
+        print('***** Model loaded successfully from file *****')
 
     def save(self):
         self.model.save_weights('model')
+        print('***** Model saved successfully to file *****')
 
-    def save_model(self, filename):
-        self.model.save(filename)
-
-    def load_model(self, filename):
-        self.model = load_model(filename)
+    # def save_model(self, filename):
+    #     self.model.save(filename)
+    #
+    # def load_model(self, filename):
+    #     self.model = load_model(filename)
+    #     self.target_model = load_model(filename)
