@@ -1,18 +1,26 @@
 import math
 import random
+
 from PIL import Image
 import matplotlib as mpl
 import matplotlib.pyplot as mplpp
 import matplotlib.cm as cm
 
+
 class Environment:
     zoom_factor = 6
     path_color = (0, 153, 153)
+    figure = None
 
     def __init__(self, image_size, window_size):
+        self.agent_path = None
+        self.agent_position = None
+        self.image = None
+        self.target_position = None
         self.image_size = image_size
         self.window_size = window_size
         self.reset(True)
+        mplpp.ion()
 
     def reset(self, use_gradient):
         self.target_position = (random.randint(0, self.image_size - 1), random.randint(0, self.image_size - 1))
@@ -62,7 +70,7 @@ class Environment:
                 image[i][j] = max(0, min(8, image[i][j] + x[0]))
         return image
 
-    def _snapshot(self):
+    def snapshot(self):
         """
         returns a matrix of the current observable image
         """
@@ -82,12 +90,13 @@ class Environment:
                     window[i][j] = self.image[new_x][new_y]
         return window
 
-    def render(self):
+    def render(self, title=None):
         """ 
         renders the entire image along with `self.agent_path` too\\
         the pixels are mapped from `[0, 9]` to `[0, 255]`
         """
 
+        self.path_color = (0, 53, 153)
         norm = mpl.colors.Normalize(vmin=0, vmax=9)
         # https://matplotlib.org/stable/tutorials/colors/colormaps.html
         # cmap = cm.nipy_spectral
@@ -107,6 +116,7 @@ class Environment:
 
         # self.agent_path = [(0, 1), (0, 2), (1, 2), (2, 2), (3, 2), (3, 1), (4, 1), (4, 2), (4, 3), (4, 4), (3, 4)]
         for i in range(1, len(self.agent_path)):
+            self.path_color = (0, 53 + i * 200 // len(self.agent_path), 153)
             first = self.agent_path[i - 1]
             second = self.agent_path[i]
 
@@ -131,10 +141,21 @@ class Environment:
                     y = first[1] * self.zoom_factor + self.zoom_factor / 2
                     pixels[y, x] = self.path_color
                     pixels[y - 1, x] = self.path_color
-        _, ax = mplpp.subplots()
+
+        # make agent position with white color
+        for i in range(-1, 2):
+            for j in range(-1, 2):
+                pixels[self.agent_position[1] * self.zoom_factor + self.zoom_factor // 2 + i,
+                       self.agent_position[0] * self.zoom_factor + self.zoom_factor // 2 + j] = (255, 255, 255)
+
+        if self.figure is None:
+            self.figure, ax = mplpp.subplots()
+            ax.xaxis.set_ticks_position('top')
+
         mplpp.imshow(img)
-        ax.xaxis.set_ticks_position('top')
-        mplpp.show()
+        mplpp.title(title)
+        self.figure.canvas.flush_events()
+        # mplpp.show()
 
     def step(self, action):
         """
@@ -144,14 +165,33 @@ class Environment:
         """
 
         new_position = (self.agent_position[0] + action[0], self.agent_position[1] + action[1])
-        if not 0 <= new_position[0] < self.image_size or not 0 <= new_position[1] < self.image_size:
-            return self._snapshot(), -1000000, False
+
+        # if not 0 <= new_position[0] < self.image_size or not 0 <= new_position[1] < self.image_size:
+        #     return self.snapshot(), -100, False
 
         self.agent_path.append(new_position)
+        self.agent_position = new_position
         if new_position == self.target_position:
-            return self._snapshot(), 100, True
+            return self.snapshot(), 100, True
+        elif new_position in self.agent_path[:-1]:
+            return self.snapshot(), -100, False
         else:
-            return self._snapshot(), -1, False
+            return self.snapshot(), -1, False
+
 
     def test(self):
-        print(self._snapshot())
+        print(self.snapshot())
+
+    def shortest_path(self):
+        """
+        returns the length of the shortest path from `self.agent_position` to `self.target_position`
+        """
+        length = abs(self.agent_position[0] - self.target_position[0]) + abs(self.agent_position[1] - self.target_position[1])
+        return length
+
+    def is_valid_action(self, action):
+        """
+        returns `True` if `action` is valid
+        """
+        new_position = (self.agent_position[0] + action[0], self.agent_position[1] + action[1])
+        return 0 <= new_position[0] < self.image_size and 0 <= new_position[1] < self.image_size
