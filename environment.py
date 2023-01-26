@@ -75,7 +75,8 @@ class Environment:
         returns a matrix of the current observable image
         """
 
-        border_value = 10
+        # border_value = 10
+        border_value = 0
         window = []
         for i in range(0, self.window_size):
             window.append([border_value] * self.window_size)
@@ -166,17 +167,17 @@ class Environment:
 
         new_position = (self.agent_position[0] + action[0], self.agent_position[1] + action[1])
 
-        # if not 0 <= new_position[0] < self.image_size or not 0 <= new_position[1] < self.image_size:
-        #     return self.snapshot(), -100, False
+        if not 0 <= new_position[0] < self.image_size or not 0 <= new_position[1] < self.image_size:
+            return self.snapshot(), -100, False
 
         self.agent_path.append(new_position)
         self.agent_position = new_position
         if new_position == self.target_position:
-            return self.snapshot(), 10_000, True
+            return self.snapshot(), 100, True
         elif new_position in self.agent_path[:-1]:
             return self.snapshot(), -100, False
         else:
-            return self.snapshot(), -1, False
+            return self.snapshot(), -1 * (10 - self.image[new_position[0]][new_position[1]])**2, False
 
 
     def test(self):
