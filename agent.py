@@ -19,9 +19,9 @@ class Agent:
 
     def create_model(self):
         model = Sequential()
-        model.add(Conv2D(filters=4, kernel_size=3, activation='relu', input_shape=(7, 7, 1)))
+        model.add(Conv2D(filters=4, kernel_size=3, activation='softmax', input_shape=(7, 7, 1)))
         model.add(Flatten())
-        model.add(Dense(100, activation='relu'))
+        model.add(Dense(100, activation='softmax'))
         model.add(Dense(len(self.action_space)))
         model.compile(loss='mean_squared_error', optimizer=Adam(learning_rate=self.alpha))
         model.summary()
@@ -48,10 +48,10 @@ class Agent:
         for state, action_index, next_state, reward, game_over in batch:
             target = self.model.predict(np.array([state]), verbose=0)[0]
             if game_over:
-                target[action_index] = reward
+                target[action_index] = reward / 530
             else:
                 q_values = self.model.predict(np.array([next_state]), verbose=0)[0]
-                target[action_index] = reward + self.gamma * np.max(q_values)
+                target[action_index] = reward / 530 + self.gamma * np.max(q_values)
             training_inputs += [state]
             training_outputs += [target]
 

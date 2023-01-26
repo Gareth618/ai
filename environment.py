@@ -26,7 +26,7 @@ class Environment:
         while True:
             self.agent_position = (random.randrange(self.image_size), random.randrange(self.image_size))
             if self.target_position != self.agent_position: break
-        
+
         self.initial_agent_position = self.agent_position
         self.agent_path = [self.agent_position]
 
@@ -148,14 +148,14 @@ class Environment:
         new_position = (self.agent_position[0] + action[0], self.agent_position[1] + action[1])
         if not 0 <= new_position[0] < self.image_size or not 0 <= new_position[1] < self.image_size:
             return self.snapshot(), -100, False
-        
+        if new_position == self.target_position:
+            return self.snapshot(), 200, True
+
         prev_value = self.image[self.agent_position[0]][self.agent_position[1]]
         next_value = self.image[new_position[0]][new_position[1]]
         step_reward = 2 * (next_value - prev_value) - 1
         self.agent_position = new_position
         self.agent_path.append(new_position)
-        if new_position == self.target_position:
-            return self.snapshot(), 200, True        
         return self.snapshot(), step_reward, False
 
     def shortest_path_length(self):

@@ -53,7 +53,7 @@ def plot_stats(number_of_episodes, rewards, steps_list, shortest_paths):
 
 if __name__ == '__main__':
     env = Environment(20, 7)
-    agent = Agent(1000, 100, alpha=.1, gamma=.618, epsilon=1, epsilon_lower=.1, epsilon_decay=.9)
+    agent = Agent(10000, 100, alpha=1, gamma=.618, epsilon=1, epsilon_lower=.1, epsilon_decay=.95)
 
     episode_rewards = []
     episode_steps_list = []
@@ -88,9 +88,10 @@ if __name__ == '__main__':
         episode_rewards.append(episode_reward)
         episode_steps_list.append(episode_steps)
 
-        agent.replay()
-        agent.save()
-        
+        if episode % 5 == 0:
+            agent.replay()
+            agent.save()
+
         print(
             f'Stage: Training - Episode: {episode}/{number_of_episodes} - Reward: {episode_reward} '
             f'- Steps: {episode_steps} - Shortest path: {episode_shortest_paths[-1]}'
