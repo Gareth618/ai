@@ -189,10 +189,3 @@ class Environment:
         """
         length = abs(self.agent_position[0] - self.target_position[0]) + abs(self.agent_position[1] - self.target_position[1])
         return length
-
-    def is_valid_action(self, action):
-        """
-        returns `True` if `action` is valid
-        """
-        new_position = (self.agent_position[0] + action[0], self.agent_position[1] + action[1])
-        return 0 <= new_position[0] < self.image_size and 0 <= new_position[1] < self.image_size

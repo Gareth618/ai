@@ -49,15 +49,8 @@ class Agent:
         else:
             q_values = self.model.predict(np.array([state]), verbose=0)[0]
             action_index = np.argmax(q_values)
-            # print('Best action:', self.action_space[action_index], 'Q-values:', q_values)
-
 
         next_state, reward, game_over = take_action(self.action_space[action_index])
-
-        # in case of invalid move
-        while next_state is None:
-            action_index = random.randrange(4)
-            next_state, reward, game_over = take_action(self.action_space[action_index])
 
         if len(self.memory.queue) == self.memory.maxsize:
             self.memory.get()
@@ -130,10 +123,3 @@ class Agent:
     def save(self):
         self.model.save_weights('model')
         print('***** Model saved successfully to file *****')
-
-    # def save_model(self, filename):
-    #     self.model.save(filename)
-    #
-    # def load_model(self, filename):
-    #     self.model = load_model(filename)
-    #     self.target_model = load_model(filename)
