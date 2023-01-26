@@ -17,7 +17,7 @@ class Environment:
         self.figure = None
         plt.ion()
 
-    def reset(self, use_gradient, min_path_length):
+    def reset(self, use_gradient):
         self.target_position = (random.randrange(self.image_size), random.randrange(self.image_size))
 
         self.image = self._random_gradient_image() if use_gradient else self._random_image()
@@ -25,10 +25,8 @@ class Environment:
 
         while True:
             self.agent_position = (random.randrange(self.image_size), random.randrange(self.image_size))
-            if self.target_position == self.agent_position: continue
-            length = abs(self.target_position[0] - self.agent_position[0]) + abs(self.target_position[1] - self.agent_position[1])
-            if length <= min_path_length: break
-
+            if self.target_position != self.agent_position: break
+        
         self.initial_agent_position = self.agent_position
         self.agent_path = [self.agent_position]
 
@@ -149,17 +147,15 @@ class Environment:
 
         new_position = (self.agent_position[0] + action[0], self.agent_position[1] + action[1])
         if not 0 <= new_position[0] < self.image_size or not 0 <= new_position[1] < self.image_size:
-            self.agent_position = self.initial_agent_position
-            self.agent_path = [self.agent_position]
             return self.snapshot(), -100, False
-
+        
         prev_value = self.image[self.agent_position[0]][self.agent_position[1]]
+        next_value = self.image[new_position[0]][new_position[1]]
+        step_reward = 2 * (next_value - prev_value) - 1
         self.agent_position = new_position
         self.agent_path.append(new_position)
         if new_position == self.target_position:
-            return self.snapshot(), 1000, True
-        next_value = self.image[new_position[0]][new_position[1]]
-        step_reward = min(math.exp(next_value - prev_value), 100) if next_value > prev_value else max(math.exp(prev_value - next_value), -100)
+            return self.snapshot(), 200, True        
         return self.snapshot(), step_reward, False
 
     def shortest_path_length(self):
