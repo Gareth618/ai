@@ -153,11 +153,14 @@ class Environment:
             self.agent_path = [self.agent_position]
             return self.snapshot(), -100, False
 
+        prev_value = self.image[self.agent_position[0]][self.agent_position[1]]
         self.agent_position = new_position
         self.agent_path.append(new_position)
         if new_position == self.target_position:
-            return self.snapshot(), 200, True
-        return self.snapshot(), self.image[new_position[0]][new_position[1]] - 10, False
+            return self.snapshot(), 1000, True
+        next_value = self.image[new_position[0]][new_position[1]]
+        step_reward = min(math.exp(next_value - prev_value), 100) if next_value > prev_value else max(math.exp(prev_value - next_value), -100)
+        return self.snapshot(), step_reward, False
 
     def shortest_path_length(self):
         """

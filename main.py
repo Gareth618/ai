@@ -53,7 +53,7 @@ def plot_stats(number_of_episodes, rewards, steps_list, shortest_paths):
 
 if __name__ == '__main__':
     env = Environment(20, 7)
-    agent = Agent(1000, 100, alpha=.5, gamma=.618, epsilon=1, epsilon_lower=.1, epsilon_decay=.99)
+    agent = Agent(1000, 100, alpha=.5, gamma=.618, epsilon=1, epsilon_lower=.1, epsilon_decay=.9)
 
     episode_rewards = []
     episode_steps_list = []
