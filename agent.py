@@ -1,9 +1,9 @@
 import random
 import numpy as np
 from queue import Queue
+from keras.optimizers import Adam
 from keras.models import Sequential
 from keras.layers import Conv2D, Flatten, Dense
-from keras.optimizers import Adam
 
 class Agent:
     def __init__(self, memory_size, batch_size, **hyper):
@@ -22,7 +22,7 @@ class Agent:
         model.add(Conv2D(filters=4, kernel_size=3, activation='relu', input_shape=(7, 7, 1)))
         model.add(Flatten())
         model.add(Dense(100, activation='relu'))
-        model.add(Dense(4))
+        model.add(Dense(len(self.action_space)))
         model.compile(loss='mean_squared_error', optimizer=Adam(learning_rate=self.alpha))
         model.summary()
         return model

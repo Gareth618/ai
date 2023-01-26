@@ -10,21 +10,26 @@ class Environment:
         self.image = None
         self.agent_path = None
         self.agent_position = None
+        self.initial_agent_position = None
         self.target_position = None
         self.image_size = image_size
         self.window_size = window_size
         self.figure = None
         plt.ion()
 
-    def reset(self, use_gradient):
+    def reset(self, use_gradient, min_path_length):
         self.target_position = (random.randrange(self.image_size), random.randrange(self.image_size))
 
         self.image = self._random_gradient_image() if use_gradient else self._random_image()
         self.image[self.target_position[0]][self.target_position[1]] = 9
 
-        self.agent_position = (random.randrange(self.image_size), random.randrange(self.image_size))
-        while self.target_position == self.agent_position:
+        while True:
             self.agent_position = (random.randrange(self.image_size), random.randrange(self.image_size))
+            if self.target_position == self.agent_position: continue
+            length = abs(self.target_position[0] - self.agent_position[0]) + abs(self.target_position[1] - self.agent_position[1])
+            if length <= min_path_length: break
+
+        self.initial_agent_position = self.agent_position
         self.agent_path = [self.agent_position]
 
     def _random_image(self):
@@ -144,13 +149,15 @@ class Environment:
 
         new_position = (self.agent_position[0] + action[0], self.agent_position[1] + action[1])
         if not 0 <= new_position[0] < self.image_size or not 0 <= new_position[1] < self.image_size:
-            return self.snapshot(), -100, True
+            self.agent_position = self.initial_agent_position
+            self.agent_path = [self.agent_position]
+            return self.snapshot(), -100, False
 
         self.agent_position = new_position
         self.agent_path.append(new_position)
         if new_position == self.target_position:
-            return self.snapshot(), 100, True
-        return self.snapshot(), -1, False
+            return self.snapshot(), 200, True
+        return self.snapshot(), self.image[new_position[0]][new_position[1]] - 10, False
 
     def shortest_path_length(self):
         """
