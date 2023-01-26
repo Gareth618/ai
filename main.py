@@ -47,7 +47,20 @@ def main():
         episode_steps_list, episode_shortest_paths
 
     number_of_episodes = 500
+<<<<<<< Updated upstream
     max_steps = 80
+=======
+    max_steps = 100
+
+    min_path_length = 1
+    for episode in range(1, number_of_episodes + 1):
+        game_over = False
+        episode_steps = 0
+        episode_reward = 0
+
+        env.reset(False, min_path_length)
+        episode_shortest_paths.append(env.shortest_path_length())
+>>>>>>> Stashed changes
 
     for episode in range(number_of_episodes):
         env.reset(True)

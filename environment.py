@@ -22,15 +22,32 @@ class Environment:
         self.reset(True)
         mplpp.ion()
 
+<<<<<<< Updated upstream
     def reset(self, use_gradient):
         self.target_position = (random.randint(0, self.image_size - 1), random.randint(0, self.image_size - 1))
+=======
+    def reset(self, use_gradient, min_path_length):
+        if self.target_position is None:
+            self.target_position = (random.randrange(self.image_size), random.randrange(self.image_size))
+>>>>>>> Stashed changes
 
-        self.image = self._random_gradient_image() if use_gradient else self._random_image()
-        self.image[self.target_position[0]][self.target_position[1]] = 9
+        if self.image is None:
+            self.image = self._random_gradient_image() if use_gradient else self._random_image()
+            self.image[self.target_position[0]][self.target_position[1]] = 9
 
+<<<<<<< Updated upstream
         self.agent_position = (random.randint(0, self.image_size - 1), random.randint(0, self.image_size - 1))
         while self.target_position == self.agent_position:
             self.agent_position = (random.randint(0, self.image_size - 1), random.randint(0, self.image_size - 1))
+=======
+        while True:
+            self.agent_position = (random.randrange(self.image_size), random.randrange(self.image_size))
+            if self.target_position != self.agent_position: break
+            # length = abs(self.target_position[0] - self.agent_position[0]) + abs(self.target_position[1] - self.agent_position[1])
+            # if length <= min_path_length: break
+
+        self.initial_agent_position = self.agent_position
+>>>>>>> Stashed changes
         self.agent_path = [self.agent_position]
 
     def _random_image(self):
@@ -165,19 +182,36 @@ class Environment:
         """
 
         new_position = (self.agent_position[0] + action[0], self.agent_position[1] + action[1])
+<<<<<<< Updated upstream
 
         # if not 0 <= new_position[0] < self.image_size or not 0 <= new_position[1] < self.image_size:
         #     return self.snapshot(), -100, False
 
+=======
+        if not 0 <= new_position[0] < self.image_size or not 0 <= new_position[1] < self.image_size:
+            # self.agent_position = self.initial_agent_position
+            # self.agent_path = [self.agent_position]
+            return self.snapshot(), -10, True
+
+        # prev_value = self.image[self.agent_position[0]][self.agent_position[1]]
+        self.agent_position = new_position
+>>>>>>> Stashed changes
         self.agent_path.append(new_position)
         self.agent_position = new_position
         if new_position == self.target_position:
+<<<<<<< Updated upstream
             return self.snapshot(), 100, True
         elif new_position in self.agent_path[:-1]:
             return self.snapshot(), -100, False
         else:
             return self.snapshot(), -1, False
 
+=======
+            return self.snapshot(), 10, True
+        # next_value = self.image[new_position[0]][new_position[1]]
+        # step_reward = min(math.exp(next_value - prev_value), 100) if next_value > prev_value else max(math.exp(prev_value - next_value), -100)
+        return self.snapshot(), -1, False
+>>>>>>> Stashed changes
 
     def test(self):
         print(self.snapshot())
